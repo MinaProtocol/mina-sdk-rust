@@ -230,10 +230,10 @@ impl MinaClient {
         public_key: &str,
         token_id: Option<&str>,
     ) -> Result<AccountData> {
-        let mut vars = json!({ "publicKey": public_key });
-        if let Some(token) = token_id {
-            vars["token"] = Value::String(token.to_string());
-        }
+        let vars = json!({
+            "publicKey": public_key,
+            "token": token_id,
+        });
 
         let data = self
             .execute_query(queries::GET_ACCOUNT, Some(vars), "get_account")
@@ -336,11 +336,11 @@ impl MinaClient {
         &self,
         public_key: Option<&str>,
     ) -> Result<Vec<PooledUserCommand>> {
-        let vars = public_key.map(|pk| json!({ "publicKey": pk }));
+        let vars = json!({ "publicKey": public_key });
         let data = self
             .execute_query(
                 queries::POOLED_USER_COMMANDS,
-                vars,
+                Some(vars),
                 "get_pooled_user_commands",
             )
             .await?;
