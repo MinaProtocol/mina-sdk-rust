@@ -20,7 +20,7 @@ from typing import Any
 
 import httpx
 
-SCHEMA_PATH = Path(__file__).resolve().parent.parent / "src" / "mina_sdk" / "schema" / "graphql_schema.json"
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / "schema" / "graphql_schema.json"
 
 INTROSPECTION_QUERY = """
 query IntrospectionQuery {
@@ -275,7 +275,7 @@ def main() -> int:
     print()
 
     if args.strict:
-        print("FAIL: Schema is out of sync with the node. Update src/mina_sdk/schema/graphql_schema.json")
+        print("FAIL: Schema is out of sync with the node. Update schema/graphql_schema.json")
         return 1
     else:
         print(f"WARN: Schema differs from {args.branch} (non-blocking).")

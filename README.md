@@ -14,7 +14,7 @@ Rust SDK for interacting with [Mina Protocol](https://minaprotocol.com) nodes vi
 
 ```toml
 [dependencies]
-mina-sdk = { git = "https://github.com/MinaProtocol/mina-sdk-rust.git" }
+mina-sdk = "0.1"
 ```
 
 ## Quick Start

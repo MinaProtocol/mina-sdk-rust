@@ -2,9 +2,13 @@
 name = "mina-sdk"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.70"
 license = "Apache-2.0"
 description = "Rust SDK for interacting with Mina Protocol nodes via GraphQL"
 repository = "https://github.com/MinaProtocol/mina-sdk-rust"
+homepage = "https://github.com/MinaProtocol/mina-sdk-rust"
+documentation = "https://docs.rs/mina-sdk"
+readme = "README.md"
 authors = ["Mina Protocol <engineering@minaprotocol.com>"]
 keywords = ["mina", "blockchain", "graphql", "cryptocurrency"]
 categories = ["api-bindings"]
