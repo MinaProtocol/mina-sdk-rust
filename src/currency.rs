@@ -238,6 +238,54 @@ mod tests {
     }
 
     #[test]
+    fn from_mina_no_decimal() {
+        let c = Currency::from_mina("100").unwrap();
+        assert_eq!(c.nanomina(), 100_000_000_000);
+    }
+
+    #[test]
+    fn from_nanomina_explicit() {
+        let c = Currency::from_nanomina(500_000_000);
+        assert_eq!(c.mina(), "0.500000000");
+        assert_eq!(c.nanomina(), 500_000_000);
+    }
+
+    #[test]
+    fn small_nanomina_display() {
+        let c = Currency::from_nanomina(1);
+        assert_eq!(c.mina(), "0.000000001");
+    }
+
+    #[test]
+    fn zero_currency() {
+        let c = Currency::from_nanomina(0);
+        assert_eq!(c.mina(), "0.000000000");
+        assert_eq!(c.to_nanomina_str(), "0");
+    }
+
+    #[test]
+    fn checked_add_basic() {
+        let a = Currency::from_mina("1").unwrap();
+        let b = Currency::from_mina("2").unwrap();
+        assert_eq!(a.checked_add(b).unwrap().nanomina(), 3_000_000_000);
+    }
+
+    #[test]
+    fn checked_mul_basic() {
+        let c = Currency::from_mina("2").unwrap();
+        assert_eq!(c.checked_mul(3).unwrap().nanomina(), 6_000_000_000);
+    }
+
+    #[test]
+    fn equality_across_constructors() {
+        let a = Currency::from_mina("1").unwrap();
+        let b = Currency::from_nanomina(1_000_000_000);
+        let c = Currency::from_graphql("1000000000").unwrap();
+        assert_eq!(a, b);
+        assert_eq!(b, c);
+    }
+
+    #[test]
     fn too_many_decimals() {
         assert!(Currency::from_mina("1.0000000001").is_err());
     }
@@ -247,5 +295,11 @@ mod tests {
         assert!(Currency::from_mina("abc").is_err());
         assert!(Currency::from_mina("").is_err());
         assert!(Currency::from_graphql("not_a_number").is_err());
+    }
+
+    #[test]
+    fn negative_input_rejected() {
+        assert!(Currency::from_mina("-1").is_err());
+        assert!(Currency::from_graphql("-500").is_err());
     }
 }

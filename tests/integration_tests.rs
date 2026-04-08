@@ -141,6 +141,25 @@ async fn test_get_account() {
 }
 
 #[tokio::test]
+async fn test_get_account_balance_types() {
+    let Some(uri) = graphql_uri() else { return };
+    let Some(sender) = sender_key() else { return };
+    let client = make_client(&uri);
+    assert!(wait_for_sync(&client).await, "daemon did not reach SYNCED");
+
+    let account = client.get_account(&sender, None).await.unwrap();
+    // total should always be present and positive for funded accounts
+    let total = account.balance.total;
+    assert!(total.nanomina() > 0);
+    // mina() should produce a valid decimal string
+    let mina_str = total.mina();
+    assert!(mina_str.contains('.'));
+    // to_nanomina_str() should round-trip
+    let roundtrip = Currency::from_graphql(&total.to_nanomina_str()).unwrap();
+    assert_eq!(roundtrip, total);
+}
+
+#[tokio::test]
 async fn test_account_not_found() {
     let Some(uri) = graphql_uri() else { return };
     let client = make_client(&uri);
