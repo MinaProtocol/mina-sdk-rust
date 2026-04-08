@@ -41,27 +41,21 @@ jobs:
           max-attempts: "60"
           polling-interval-ms: "10000"
 
-      - name: Wait for account faucet
-        run: |
-          for i in $(seq 1 30); do
-            if curl -sf http://127.0.0.1:8181/acquire-account -o /dev/null 2>/dev/null; then
-              echo "Faucet is ready"
-              exit 0
-            fi
-            echo "Waiting for faucet... attempt $i/30"
-            sleep 10
-          done
-          echo "Faucet did not become ready"
-          exit 1
-
       - name: Acquire test accounts
         id: accounts
         run: |
-          SENDER=$(curl -s http://127.0.0.1:8181/acquire-account?unlockAccount=true)
+          for i in $(seq 1 30); do
+            SENDER=$(curl -s http://127.0.0.1:8181/acquire-account?unlockAccount=true)
+            SENDER_PK=$(echo "$SENDER" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['pk'])" 2>/dev/null) && break
+            echo "Waiting for accounts to be ready... attempt $i/30"
+            echo "Response: $SENDER"
+            sleep 10
+          done
+          if [ -z "$SENDER_PK" ]; then
+            echo "Failed to acquire sender account"
+            exit 1
+          fi
           RECEIVER=$(curl -s http://127.0.0.1:8181/acquire-account)
-          echo "Sender response: $SENDER"
-          echo "Receiver response: $RECEIVER"
-          SENDER_PK=$(echo "$SENDER" | python3 -c "import sys,json; print(json.load(sys.stdin)['pk'])")
           RECEIVER_PK=$(echo "$RECEIVER" | python3 -c "import sys,json; print(json.load(sys.stdin)['pk'])")
           echo "sender_pk=$SENDER_PK" >> "$GITHUB_OUTPUT"
           echo "receiver_pk=$RECEIVER_PK" >> "$GITHUB_OUTPUT"
