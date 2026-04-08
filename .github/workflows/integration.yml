@@ -44,19 +44,26 @@ jobs:
       - name: Acquire test accounts
         id: accounts
         run: |
+          # Acquire accounts without unlock (more reliable)
+          SENDER=$(curl -s http://127.0.0.1:8181/acquire-account)
+          RECEIVER=$(curl -s http://127.0.0.1:8181/acquire-account)
+          echo "Sender response: $SENDER"
+          echo "Receiver response: $RECEIVER"
+          SENDER_PK=$(echo "$SENDER" | python3 -c "import sys,json; print(json.load(sys.stdin)['pk'])")
+          RECEIVER_PK=$(echo "$RECEIVER" | python3 -c "import sys,json; print(json.load(sys.stdin)['pk'])")
+
+          # Unlock sender via GraphQL
+          UNLOCK_QUERY='mutation($input: UnlockInput!) { unlockAccount(input: $input) { publicKey } }'
+          SENDER_SK=$(echo "$SENDER" | python3 -c "import sys,json; print(json.load(sys.stdin)['sk'])")
           for i in $(seq 1 30); do
-            SENDER=$(curl -s http://127.0.0.1:8181/acquire-account?unlockAccount=true)
-            SENDER_PK=$(echo "$SENDER" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['pk'])" 2>/dev/null) && break
-            echo "Waiting for accounts to be ready... attempt $i/30"
-            echo "Response: $SENDER"
+            RESULT=$(curl -s http://127.0.0.1:8080/graphql \
+              -H "Content-Type: application/json" \
+              -d "{\"query\": \"$UNLOCK_QUERY\", \"variables\": {\"input\": {\"publicKey\": \"$SENDER_PK\", \"password\": \"\"}}}")
+            echo "Unlock attempt $i: $RESULT"
+            echo "$RESULT" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['data']['unlockAccount']['publicKey']" 2>/dev/null && break
             sleep 10
           done
-          if [ -z "$SENDER_PK" ]; then
-            echo "Failed to acquire sender account"
-            exit 1
-          fi
-          RECEIVER=$(curl -s http://127.0.0.1:8181/acquire-account)
-          RECEIVER_PK=$(echo "$RECEIVER" | python3 -c "import sys,json; print(json.load(sys.stdin)['pk'])")
+
           echo "sender_pk=$SENDER_PK" >> "$GITHUB_OUTPUT"
           echo "receiver_pk=$RECEIVER_PK" >> "$GITHUB_OUTPUT"
           echo "Sender: $SENDER_PK"
