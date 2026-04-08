@@ -44,25 +44,38 @@ jobs:
       - name: Acquire test accounts
         id: accounts
         run: |
-          # Acquire accounts from the faucet pool
-          SENDER=$(curl -s "http://127.0.0.1:8181/acquire-account")
-          RECEIVER=$(curl -s "http://127.0.0.1:8181/acquire-account")
-          echo "Sender: $SENDER"
-          echo "Receiver: $RECEIVER"
-          SENDER_PK=$(echo "$SENDER" | python3 -c "import sys,json; print(json.load(sys.stdin)['pk'])")
-          SENDER_SK=$(echo "$SENDER" | python3 -c "import sys,json; print(json.load(sys.stdin)['sk'])")
-          RECEIVER_PK=$(echo "$RECEIVER" | python3 -c "import sys,json; print(json.load(sys.stdin)['pk'])")
-
-          # Unlock sender via the accounts-manager (imports key into daemon wallet)
+          # Query daemon for accounts already in its wallet (pre-loaded by lightnet)
+          WALLETS_QUERY='{ ownedWallets { publicKey locked } }'
           for i in $(seq 1 30); do
-            UNLOCK=$(curl -s -X PUT http://127.0.0.1:8181/unlock-account \
+            RESULT=$(curl -s http://127.0.0.1:8080/graphql \
               -H "Content-Type: application/json" \
-              -d "{\"pk\": \"$SENDER_PK\", \"sk\": \"$SENDER_SK\"}")
-            echo "Unlock attempt $i: $UNLOCK"
-            # Success if response doesn't contain "code":500
-            echo "$UNLOCK" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('code') != 500" 2>/dev/null && break
+              -d "{\"query\": \"$WALLETS_QUERY\"}")
+            echo "Wallet query attempt $i: $RESULT"
+            WALLET_COUNT=$(echo "$RESULT" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          wallets = d.get('data', {}).get('ownedWallets') or []
+          print(len(wallets))
+          " 2>/dev/null)
+            if [ "$WALLET_COUNT" -gt "1" ] 2>/dev/null; then
+              break
+            fi
             sleep 10
           done
+
+          # Pick sender (first wallet) and receiver (second wallet), unlock sender
+          read SENDER_PK RECEIVER_PK <<< $(echo "$RESULT" | python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          wallets = d['data']['ownedWallets']
+          print(wallets[0]['publicKey'], wallets[1]['publicKey'])
+          ")
+
+          # Unlock sender if locked
+          UNLOCK_QUERY='mutation(\$input: UnlockInput!) { unlockAccount(input: \$input) { publicKey } }'
+          curl -s http://127.0.0.1:8080/graphql \
+            -H "Content-Type: application/json" \
+            -d "{\"query\": \"$UNLOCK_QUERY\", \"variables\": {\"input\": {\"publicKey\": \"$SENDER_PK\", \"password\": \"\"}}}"
 
           echo "sender_pk=$SENDER_PK" >> "$GITHUB_OUTPUT"
           echo "receiver_pk=$RECEIVER_PK" >> "$GITHUB_OUTPUT"
