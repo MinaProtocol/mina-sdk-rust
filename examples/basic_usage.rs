@@ -17,10 +17,7 @@ async fn main() -> mina_sdk::Result<()> {
     // Get daemon status with peer info
     let status = client.get_daemon_status().await?;
     println!("Blockchain length: {:?}", status.blockchain_length);
-    println!(
-        "Peers: {}",
-        status.peers.as_ref().map_or(0, |p| p.len())
-    );
+    println!("Peers: {}", status.peers.as_ref().map_or(0, |p| p.len()));
 
     // Get network ID
     let network_id = client.get_network_id().await?;
