@@ -1,0 +1,23 @@
+[package]
+name = "mina-sdk"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Rust SDK for interacting with Mina Protocol nodes via GraphQL"
+repository = "https://github.com/MinaProtocol/mina-sdk-rust"
+authors = ["Mina Protocol <engineering@minaprotocol.com>"]
+keywords = ["mina", "blockchain", "graphql", "cryptocurrency"]
+categories = ["api-bindings"]
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+
+[dev-dependencies]
+wiremock = "0.6"
+tokio = { version = "1", features = ["full", "test-util"] }
+rand = "0.8"
