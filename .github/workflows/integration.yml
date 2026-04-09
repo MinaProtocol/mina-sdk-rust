@@ -48,17 +48,12 @@ jobs:
           # daemon wallet. This can fail if the daemon's keystore isn't ready yet,
           # so retry with back-off.
           for i in $(seq 1 60); do
-            SENDER=$(curl -sf "http://127.0.0.1:8181/acquire-account?unlockAccount=true" 2>/dev/null || true)
+            SENDER=$(curl -s "http://127.0.0.1:8181/acquire-account?unlockAccount=true" 2>&1 || true)
             if echo "$SENDER" | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'pk' in d" 2>/dev/null; then
-              echo "Sender acquired on attempt $i"
+              echo "Sender acquired on attempt $i: $SENDER"
               break
             fi
-            echo "Attempt $i/60 - waiting for account faucet... Response: $SENDER"
-            # Release the failed account back if it was acquired but unlock failed
-            if echo "$SENDER" | grep -q '"code":500' 2>/dev/null; then
-              # The account wasn't returned since it errored, try fresh
-              true
-            fi
+            echo "Attempt $i/60 - Response: $SENDER"
             sleep 10
           done
 
