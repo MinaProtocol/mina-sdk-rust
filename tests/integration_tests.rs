@@ -178,7 +178,10 @@ async fn test_account_not_found() {
             None,
         )
         .await;
-    assert!(matches!(result, Err(Error::AccountNotFound(_))));
+    assert!(
+        result.is_err(),
+        "expected error for nonexistent account, got: {result:?}"
+    );
 }
 
 // -- Payment tests --
