@@ -20,7 +20,21 @@ pub const DAEMON_STATUS: &str = r#"query {
 
 pub const NETWORK_ID: &str = r#"query { networkID }"#;
 
-pub const GET_ACCOUNT: &str = r#"query ($publicKey: PublicKey!, $token: TokenId) {
+pub const GET_ACCOUNT: &str = r#"query ($publicKey: PublicKey!) {
+    account(publicKey: $publicKey) {
+        publicKey
+        nonce
+        delegate
+        tokenId
+        balance {
+            total
+            liquid
+            locked
+        }
+    }
+}"#;
+
+pub const GET_ACCOUNT_WITH_TOKEN: &str = r#"query ($publicKey: PublicKey!, $token: TokenId!) {
     account(publicKey: $publicKey, token: $token) {
         publicKey
         nonce

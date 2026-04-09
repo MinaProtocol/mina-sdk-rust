@@ -13,15 +13,19 @@ use std::time::Duration;
 use mina_sdk::*;
 
 fn graphql_uri() -> Option<String> {
-    env::var("MINA_GRAPHQL_URI").ok()
+    env::var("MINA_GRAPHQL_URI").ok().filter(|s| !s.is_empty())
 }
 
 fn sender_key() -> Option<String> {
-    env::var("MINA_TEST_SENDER_KEY").ok()
+    env::var("MINA_TEST_SENDER_KEY")
+        .ok()
+        .filter(|s| !s.is_empty())
 }
 
 fn receiver_key() -> Option<String> {
-    env::var("MINA_TEST_RECEIVER_KEY").ok()
+    env::var("MINA_TEST_RECEIVER_KEY")
+        .ok()
+        .filter(|s| !s.is_empty())
 }
 
 fn make_client(uri: &str) -> MinaClient {

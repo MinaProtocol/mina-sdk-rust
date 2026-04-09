@@ -230,14 +230,15 @@ impl MinaClient {
         public_key: &str,
         token_id: Option<&str>,
     ) -> Result<AccountData> {
-        let vars = json!({
-            "publicKey": public_key,
-            "token": token_id,
-        });
+        let (query, vars) = match token_id {
+            Some(token) => (
+                queries::GET_ACCOUNT_WITH_TOKEN,
+                json!({ "publicKey": public_key, "token": token }),
+            ),
+            None => (queries::GET_ACCOUNT, json!({ "publicKey": public_key })),
+        };
 
-        let data = self
-            .execute_query(queries::GET_ACCOUNT, Some(vars), "get_account")
-            .await?;
+        let data = self.execute_query(query, Some(vars), "get_account").await?;
 
         let acc = data
             .get("account")
