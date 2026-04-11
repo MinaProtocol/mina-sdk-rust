@@ -1,5 +1,10 @@
 # Mina Rust SDK
 
+[![Crates.io](https://img.shields.io/crates/v/mina-sdk.svg)](https://crates.io/crates/mina-sdk)
+[![Documentation](https://docs.rs/mina-sdk/badge.svg)](https://docs.rs/mina-sdk)
+[![CI](https://github.com/MinaProtocol/mina-sdk-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/MinaProtocol/mina-sdk-rust/actions/workflows/ci.yml)
+[![License: Apache-2.0](https://img.shields.io/crates/l/mina-sdk.svg)](LICENSE)
+
 Rust SDK for interacting with [Mina Protocol](https://minaprotocol.com) nodes via GraphQL.
 
 ## Features
@@ -9,6 +14,11 @@ Rust SDK for interacting with [Mina Protocol](https://minaprotocol.com) nodes vi
 - Automatic retry with configurable backoff
 - Public `execute_query()` for custom GraphQL queries
 - `tracing` instrumentation
+
+## Requirements
+
+- Rust 1.70+ (edition 2021)
+- A running [Mina daemon](https://docs.minaprotocol.com/node-operators/getting-started) with GraphQL enabled
 
 ## Installation
 
@@ -65,6 +75,8 @@ let client = MinaClient::with_config(ClientConfig {
 
 ## API Reference
 
+Full API documentation is available on [docs.rs](https://docs.rs/mina-sdk).
+
 ### Queries
 
 | Method | Description |
@@ -111,6 +123,25 @@ cargo test
 cargo clippy
 ```
 
+### Integration tests
+
+Integration tests run against a live Mina node and are skipped by default.
+To run them locally with a [lightnet](https://docs.minaprotocol.com/zkapps/writing-a-zkapp/introduction-to-zkapps/testing-zkapps-lightnet) Docker container:
+
+```bash
+docker run --rm -d -p 8080:8080 -p 8181:8181 -p 3085:3085 \
+  -e NETWORK_TYPE=single-node -e PROOF_LEVEL=none \
+  o1labs/mina-local-network:compatible-latest-lightnet
+
+# Wait for the network to sync, then:
+MINA_GRAPHQL_URI=http://127.0.0.1:8080/graphql \
+  cargo test --test integration_tests -- --test-threads=1
+```
+
+## Contributing
+
+Contributions are welcome. Please open an issue first to discuss what you'd like to change.
+
 ## License
 
-Apache License 2.0
+[Apache License 2.0](LICENSE)

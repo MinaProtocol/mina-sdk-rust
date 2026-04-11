@@ -12,13 +12,14 @@ readme = "README.md"
 authors = ["Mina Protocol <engineering@minaprotocol.com>"]
 keywords = ["mina", "blockchain", "graphql", "cryptocurrency"]
 categories = ["api-bindings"]
+exclude = [".github/", "scripts/", "schema/", "tests/", "examples/"]
 
 [dependencies]
 reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["rt", "time"] }
 tracing = "0.1"
 
 [dev-dependencies]
