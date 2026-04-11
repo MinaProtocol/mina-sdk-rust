@@ -35,4 +35,7 @@ mod types;
 pub use client::{ClientConfig, MinaClient};
 pub use currency::Currency;
 pub use error::{Error, Result};
-pub use types::*;
+pub use types::{
+    AccountBalance, AccountData, BlockInfo, DaemonStatus, PeerInfo, PooledUserCommand,
+    SendDelegationResult, SendPaymentResult, SyncStatus,
+};

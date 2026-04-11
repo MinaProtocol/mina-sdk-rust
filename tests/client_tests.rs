@@ -5,6 +5,15 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 
 use mina_sdk::*;
 
+#[test]
+fn test_client_config_defaults() {
+    let config = ClientConfig::default();
+    assert_eq!(config.graphql_uri, "http://127.0.0.1:3085/graphql");
+    assert_eq!(config.retries, 3);
+    assert_eq!(config.retry_delay, Duration::from_secs(5));
+    assert_eq!(config.timeout, Duration::from_secs(30));
+}
+
 fn test_config(uri: &str) -> ClientConfig {
     ClientConfig {
         graphql_uri: uri.to_string(),
