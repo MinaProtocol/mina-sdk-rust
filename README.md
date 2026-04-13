@@ -138,6 +138,16 @@ MINA_GRAPHQL_URI=http://127.0.0.1:8080/graphql \
   cargo test --test integration_tests -- --test-threads=1
 ```
 
+## Troubleshooting
+
+**Connection refused** — Make sure the Mina daemon is running and the GraphQL endpoint is accessible. The default URI is `http://127.0.0.1:3085/graphql`.
+
+**Account not found** — The account may not exist on the network, or the public key format is incorrect. Mina public keys start with `B62q`.
+
+**Schema drift** — If queries fail with unexpected GraphQL errors, the daemon version may have changed its schema. Run the schema drift check: `python3 scripts/check_schema_drift.py --endpoint http://your-node:3085/graphql`
+
+**Timeout errors** — Increase the timeout and retry settings via `ClientConfig`. Some queries (like `get_best_chain`) can be slow on nodes that are still syncing.
+
 ## Contributing
 
 Contributions are welcome. Please open an issue first to discuss what you'd like to change.

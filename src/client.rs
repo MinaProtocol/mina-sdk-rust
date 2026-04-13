@@ -59,7 +59,16 @@ impl MinaClient {
     }
 
     /// Create a new client with custom configuration.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `retries` is 0, `retry_delay` is negative, or `timeout` is zero.
     pub fn with_config(config: ClientConfig) -> Self {
+        assert!(config.retries >= 1, "retries must be at least 1");
+        assert!(
+            !config.timeout.is_zero(),
+            "timeout must be greater than zero"
+        );
         let http = reqwest::Client::builder()
             .timeout(config.timeout)
             .build()
@@ -99,40 +108,51 @@ impl MinaClient {
                 .send()
                 .await
             {
-                Ok(resp) => match resp.json::<Value>().await {
-                    Ok(body) => {
-                        if let Some(errors) = body.get("errors").and_then(|e| e.as_array()) {
-                            let entries: Vec<GraphqlErrorEntry> = errors
-                                .iter()
-                                .map(|e| GraphqlErrorEntry {
-                                    message: e
-                                        .get("message")
-                                        .and_then(|m| m.as_str())
-                                        .unwrap_or("unknown error")
-                                        .to_string(),
-                                })
-                                .collect();
-                            let messages = entries
-                                .iter()
-                                .map(|e| e.message.as_str())
-                                .collect::<Vec<_>>()
-                                .join("; ");
-                            return Err(Error::Graphql {
-                                query_name: query_name.to_string(),
-                                messages,
-                                errors: entries,
-                            });
+                Ok(resp) => {
+                    let status = resp.status();
+                    if !status.is_success() {
+                        warn!(query_name, attempt, %status, "HTTP error");
+                        last_err = Some(resp.error_for_status().unwrap_err());
+                        if attempt < self.config.retries {
+                            tokio::time::sleep(self.config.retry_delay).await;
                         }
-                        return Ok(body
-                            .get("data")
-                            .cloned()
-                            .unwrap_or(Value::Object(Default::default())));
+                        continue;
                     }
-                    Err(e) => {
-                        warn!(query_name, attempt, error = %e, "failed to parse response");
-                        last_err = Some(e);
+                    match resp.json::<Value>().await {
+                        Ok(body) => {
+                            if let Some(errors) = body.get("errors").and_then(|e| e.as_array()) {
+                                let entries: Vec<GraphqlErrorEntry> = errors
+                                    .iter()
+                                    .map(|e| GraphqlErrorEntry {
+                                        message: e
+                                            .get("message")
+                                            .and_then(|m| m.as_str())
+                                            .unwrap_or("unknown error")
+                                            .to_string(),
+                                    })
+                                    .collect();
+                                let messages = entries
+                                    .iter()
+                                    .map(|e| e.message.as_str())
+                                    .collect::<Vec<_>>()
+                                    .join("; ");
+                                return Err(Error::Graphql {
+                                    query_name: query_name.to_string(),
+                                    messages,
+                                    errors: entries,
+                                });
+                            }
+                            return Ok(body
+                                .get("data")
+                                .cloned()
+                                .unwrap_or(Value::Object(Default::default())));
+                        }
+                        Err(e) => {
+                            warn!(query_name, attempt, error = %e, "failed to parse response");
+                            last_err = Some(e);
+                        }
                     }
-                },
+                }
                 Err(e) => {
                     warn!(query_name, attempt, error = %e, "connection error");
                     last_err = Some(e);

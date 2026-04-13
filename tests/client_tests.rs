@@ -14,6 +14,38 @@ fn test_client_config_defaults() {
     assert_eq!(config.timeout, Duration::from_secs(30));
 }
 
+#[test]
+#[should_panic(expected = "retries must be at least 1")]
+fn test_client_config_zero_retries() {
+    MinaClient::with_config(ClientConfig {
+        retries: 0,
+        ..Default::default()
+    });
+}
+
+#[test]
+#[should_panic(expected = "timeout must be greater than zero")]
+fn test_client_config_zero_timeout() {
+    MinaClient::with_config(ClientConfig {
+        timeout: Duration::ZERO,
+        ..Default::default()
+    });
+}
+
+#[tokio::test]
+async fn test_http_500_retries() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/graphql"))
+        .respond_with(ResponseTemplate::new(500).set_body_string("Internal Server Error"))
+        .mount(&server)
+        .await;
+
+    let client = MinaClient::with_config(test_config(&format!("{}/graphql", server.uri())));
+    let result = client.get_sync_status().await;
+    assert!(matches!(result, Err(Error::Connection { .. })));
+}
+
 fn test_config(uri: &str) -> ClientConfig {
     ClientConfig {
         graphql_uri: uri.to_string(),

@@ -100,6 +100,13 @@ impl std::ops::Mul<u64> for Currency {
     }
 }
 
+impl std::ops::Mul<Currency> for u64 {
+    type Output = Currency;
+    fn mul(self, rhs: Currency) -> Self::Output {
+        Currency(self * rhs.0)
+    }
+}
+
 /// Parse a decimal string like "1.5" or "100" into nanomina.
 fn parse_decimal(s: &str) -> Result<u64> {
     let s = s.trim();
@@ -214,6 +221,12 @@ mod tests {
     fn multiplication() {
         let c = Currency::from_mina("2").unwrap();
         assert_eq!((c * 3).nanomina(), 6_000_000_000);
+    }
+
+    #[test]
+    fn reverse_multiplication() {
+        let c = Currency::from_mina("2").unwrap();
+        assert_eq!((3_u64 * c).nanomina(), 6_000_000_000);
     }
 
     #[test]
