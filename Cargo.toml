@@ -11,7 +11,7 @@ readme = "README.md"
 authors = ["Mina Protocol <engineering@minaprotocol.com>"]
 keywords = ["mina", "blockchain", "graphql", "cryptocurrency"]
 categories = ["api-bindings"]
-exclude = [".github/", "scripts/", "schema/", "tests/", "examples/"]
+exclude = [".github/", "scripts/", "schema/", "tests/integration_tests.rs"]
 
 [dependencies]
 reqwest = { version = "0.12", features = ["json"] }
