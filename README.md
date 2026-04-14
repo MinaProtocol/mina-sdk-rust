@@ -29,7 +29,7 @@ mina-sdk = "0.1"
 ## Quick Start
 
 ```rust
-use mina_sdk::{MinaClient, Currency};
+use mina_sdk::{MinaClient, Payment, Currency};
 
 #[tokio::main]
 async fn main() -> mina_sdk::Result<()> {
@@ -45,12 +45,11 @@ async fn main() -> mina_sdk::Result<()> {
 
     // Send a payment
     let result = client.send_payment(
-        "B62qsender...",
-        "B62qreceiver...",
-        Currency::from_mina("1.5")?,
-        Currency::from_mina("0.01")?,
-        Some("hello from SDK"),
-        None,
+        Payment::sender("B62qsender...")
+            .to("B62qreceiver...")
+            .amount(Currency::from_mina("1.5")?)
+            .fee(Currency::from_mina("0.01")?)
+            .memo("hello from SDK"),
     ).await?;
     println!("Tx hash: {}", result.hash);
 
@@ -93,8 +92,8 @@ Full API documentation is available on [docs.rs](https://docs.rs/mina-sdk).
 
 | Method | Description |
 |--------|-------------|
-| `send_payment(sender, receiver, amount, fee, memo, nonce)` | Send a payment |
-| `send_delegation(sender, delegate_to, fee, memo, nonce)` | Delegate stake |
+| `send_payment(Payment)` | Send a payment |
+| `send_delegation(Delegation)` | Delegate stake |
 | `set_snark_worker(public_key)` | Set/unset SNARK worker |
 | `set_snark_work_fee(fee)` | Set SNARK work fee |
 

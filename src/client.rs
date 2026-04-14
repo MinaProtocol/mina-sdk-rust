@@ -378,25 +378,35 @@ impl MinaClient {
     /// Send a payment transaction.
     ///
     /// Requires the sender's account to be unlocked on the node.
-    pub async fn send_payment(
-        &self,
-        sender: &str,
-        receiver: &str,
-        amount: Currency,
-        fee: Currency,
-        memo: Option<&str>,
-        nonce: Option<u64>,
-    ) -> Result<SendPaymentResult> {
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(client: &mina_sdk::MinaClient) -> mina_sdk::Result<()> {
+    /// use mina_sdk::{Payment, Currency};
+    ///
+    /// let result = client.send_payment(
+    ///     Payment::sender("B62qsender...")
+    ///         .to("B62qreceiver...")
+    ///         .amount(Currency::from_mina("1.5")?)
+    ///         .fee(Currency::from_mina("0.01")?)
+    ///         .memo("coffee"),
+    /// ).await?;
+    /// println!("Tx hash: {}", result.hash);
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn send_payment(&self, payment: Payment) -> Result<SendPaymentResult> {
         let mut input = json!({
-            "from": sender,
-            "to": receiver,
-            "amount": amount.to_nanomina_str(),
-            "fee": fee.to_nanomina_str(),
+            "from": payment.sender,
+            "to": payment.receiver,
+            "amount": payment.amount.to_nanomina_str(),
+            "fee": payment.fee.to_nanomina_str(),
         });
-        if let Some(m) = memo {
-            input["memo"] = Value::String(m.to_string());
+        if let Some(m) = &payment.memo {
+            input["memo"] = Value::String(m.clone());
         }
-        if let Some(n) = nonce {
+        if let Some(n) = payment.nonce {
             input["nonce"] = Value::String(n.to_string());
         }
 
@@ -408,34 +418,42 @@ impl MinaClient {
             )
             .await?;
 
-        let payment = &data["sendPayment"]["payment"];
+        let result = &data["sendPayment"]["payment"];
         Ok(SendPaymentResult {
-            id: payment["id"].as_str().unwrap_or_default().to_string(),
-            hash: payment["hash"].as_str().unwrap_or_default().to_string(),
-            nonce: parse_u64(&payment["nonce"]),
+            id: result["id"].as_str().unwrap_or_default().to_string(),
+            hash: result["hash"].as_str().unwrap_or_default().to_string(),
+            nonce: parse_u64(&result["nonce"]),
         })
     }
 
     /// Send a stake delegation transaction.
     ///
     /// Requires the sender's account to be unlocked on the node.
-    pub async fn send_delegation(
-        &self,
-        sender: &str,
-        delegate_to: &str,
-        fee: Currency,
-        memo: Option<&str>,
-        nonce: Option<u64>,
-    ) -> Result<SendDelegationResult> {
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # async fn example(client: &mina_sdk::MinaClient) -> mina_sdk::Result<()> {
+    /// use mina_sdk::{Delegation, Currency};
+    ///
+    /// let result = client.send_delegation(
+    ///     Delegation::sender("B62qsender...")
+    ///         .to("B62qdelegate...")
+    ///         .fee(Currency::from_mina("0.01")?),
+    /// ).await?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub async fn send_delegation(&self, delegation: Delegation) -> Result<SendDelegationResult> {
         let mut input = json!({
-            "from": sender,
-            "to": delegate_to,
-            "fee": fee.to_nanomina_str(),
+            "from": delegation.sender,
+            "to": delegation.delegate_to,
+            "fee": delegation.fee.to_nanomina_str(),
         });
-        if let Some(m) = memo {
-            input["memo"] = Value::String(m.to_string());
+        if let Some(m) = &delegation.memo {
+            input["memo"] = Value::String(m.clone());
         }
-        if let Some(n) = nonce {
+        if let Some(n) = delegation.nonce {
             input["nonce"] = Value::String(n.to_string());
         }
 
@@ -447,11 +465,11 @@ impl MinaClient {
             )
             .await?;
 
-        let delegation = &data["sendDelegation"]["delegation"];
+        let result = &data["sendDelegation"]["delegation"];
         Ok(SendDelegationResult {
-            id: delegation["id"].as_str().unwrap_or_default().to_string(),
-            hash: delegation["hash"].as_str().unwrap_or_default().to_string(),
-            nonce: parse_u64(&delegation["nonce"]),
+            id: result["id"].as_str().unwrap_or_default().to_string(),
+            hash: result["hash"].as_str().unwrap_or_default().to_string(),
+            nonce: parse_u64(&result["nonce"]),
         })
     }
 

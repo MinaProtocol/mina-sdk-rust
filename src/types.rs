@@ -92,6 +92,130 @@ pub struct SendDelegationResult {
     pub nonce: u64,
 }
 
+/// Parameters for sending a payment transaction.
+///
+/// Built using a fluent API where each method documents its purpose:
+///
+/// ```
+/// use mina_sdk::{Payment, Currency};
+///
+/// let payment = Payment::sender("B62qsender...")
+///     .to("B62qreceiver...")
+///     .amount(Currency::from_nanomina(1_500_000_000))
+///     .fee(Currency::from_nanomina(10_000_000))
+///     .memo("coffee payment")
+///     .nonce(42);
+/// ```
+#[derive(Debug, Clone)]
+pub struct Payment {
+    pub sender: String,
+    pub receiver: String,
+    pub amount: Currency,
+    pub fee: Currency,
+    pub memo: Option<String>,
+    pub nonce: Option<u64>,
+}
+
+impl Payment {
+    /// Start building a payment with the sender's public key.
+    pub fn sender(sender: &str) -> Self {
+        Self {
+            sender: sender.to_string(),
+            receiver: String::new(),
+            amount: Currency::from_nanomina(0),
+            fee: Currency::from_nanomina(0),
+            memo: None,
+            nonce: None,
+        }
+    }
+
+    /// Set the receiver's public key.
+    pub fn to(mut self, receiver: &str) -> Self {
+        self.receiver = receiver.to_string();
+        self
+    }
+
+    /// Set the payment amount.
+    pub fn amount(mut self, amount: Currency) -> Self {
+        self.amount = amount;
+        self
+    }
+
+    /// Set the transaction fee.
+    pub fn fee(mut self, fee: Currency) -> Self {
+        self.fee = fee;
+        self
+    }
+
+    /// Set an optional memo.
+    pub fn memo(mut self, memo: &str) -> Self {
+        self.memo = Some(memo.to_string());
+        self
+    }
+
+    /// Set an explicit nonce (otherwise the daemon picks the next nonce).
+    pub fn nonce(mut self, nonce: u64) -> Self {
+        self.nonce = Some(nonce);
+        self
+    }
+}
+
+/// Parameters for sending a stake delegation transaction.
+///
+/// ```
+/// use mina_sdk::{Delegation, Currency};
+///
+/// let delegation = Delegation::sender("B62qsender...")
+///     .to("B62qdelegate...")
+///     .fee(Currency::from_nanomina(10_000_000))
+///     .memo("staking");
+/// ```
+#[derive(Debug, Clone)]
+pub struct Delegation {
+    pub sender: String,
+    pub delegate_to: String,
+    pub fee: Currency,
+    pub memo: Option<String>,
+    pub nonce: Option<u64>,
+}
+
+impl Delegation {
+    /// Start building a delegation with the sender's public key.
+    pub fn sender(sender: &str) -> Self {
+        Self {
+            sender: sender.to_string(),
+            delegate_to: String::new(),
+            fee: Currency::from_nanomina(0),
+            memo: None,
+            nonce: None,
+        }
+    }
+
+    /// Set the delegate's public key.
+    pub fn to(mut self, delegate_to: &str) -> Self {
+        self.delegate_to = delegate_to.to_string();
+        self
+    }
+
+    /// Set the transaction fee.
+    pub fn fee(mut self, fee: Currency) -> Self {
+        self.fee = fee;
+        self
+    }
+
+    /// Set an optional memo.
+    pub fn memo(mut self, memo: &str) -> Self {
+        self.memo = Some(memo.to_string());
+        self
+    }
+
+    /// Set an explicit nonce (otherwise the daemon picks the next nonce).
+    pub fn nonce(mut self, nonce: u64) -> Self {
+        self.nonce = Some(nonce);
+        self
+    }
+}
+
 /// A pooled user command from the transaction pool.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PooledUserCommand {
