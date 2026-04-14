@@ -198,12 +198,11 @@ async fn test_send_payment() {
 
     let result = client
         .send_payment(
-            &sender,
-            &receiver,
-            Currency::from_mina("0.001").unwrap(),
-            Currency::from_mina("0.01").unwrap(),
-            Some("integration test"),
-            None,
+            Payment::sender(&sender)
+                .to(&receiver)
+                .amount(Currency::from_mina("0.001").unwrap())
+                .fee(Currency::from_mina("0.01").unwrap())
+                .memo("integration test"),
         )
         .await
         .unwrap();
@@ -222,11 +221,9 @@ async fn test_send_delegation() {
 
     let result = client
         .send_delegation(
-            &sender,
-            &receiver,
-            Currency::from_mina("0.01").unwrap(),
-            None,
-            None,
+            Delegation::sender(&sender)
+                .to(&receiver)
+                .fee(Currency::from_mina("0.01").unwrap()),
         )
         .await
         .unwrap();
@@ -245,12 +242,11 @@ async fn test_payment_appears_in_pool() {
 
     let _result = client
         .send_payment(
-            &sender,
-            &receiver,
-            Currency::from_mina("0.001").unwrap(),
-            Currency::from_mina("0.01").unwrap(),
-            Some("pool test"),
-            None,
+            Payment::sender(&sender)
+                .to(&receiver)
+                .amount(Currency::from_mina("0.001").unwrap())
+                .fee(Currency::from_mina("0.01").unwrap())
+                .memo("pool test"),
         )
         .await
         .unwrap();

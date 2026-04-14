@@ -2,7 +2,7 @@
 //!
 //! Run with: cargo run --example basic_usage
 
-use mina_sdk::{ClientConfig, MinaClient};
+use mina_sdk::{ClientConfig, Currency, Delegation, MinaClient, Payment};
 use std::time::Duration;
 
 #[tokio::main]
@@ -45,6 +45,37 @@ async fn main() -> mina_sdk::Result<()> {
         }
         Err(e) => return Err(e),
     }
+
+    Ok(())
+}
+
+/// Example: send a payment and delegate stake.
+#[allow(dead_code)]
+async fn send_transactions() -> mina_sdk::Result<()> {
+    let client = MinaClient::new("http://127.0.0.1:3085/graphql");
+
+    // Send a payment with memo
+    let result = client
+        .send_payment(
+            Payment::sender("B62qsender...")
+                .to("B62qreceiver...")
+                .amount(Currency::from_mina("1.5")?)
+                .fee(Currency::from_mina("0.01")?)
+                .memo("coffee payment"),
+        )
+        .await?;
+    println!("Payment hash: {}", result.hash);
+
+    // Delegate stake
+    let result = client
+        .send_delegation(
+            Delegation::sender("B62qsender...")
+                .to("B62qdelegate...")
+                .fee(Currency::from_mina("0.01")?)
+                .memo("staking"),
+        )
+        .await?;
+    println!("Delegation hash: {}", result.hash);
 
     Ok(())
 }

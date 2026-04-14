@@ -4,7 +4,7 @@
 //!
 //! ```no_run
 //! # async fn example() -> mina_sdk::Result<()> {
-//! use mina_sdk::{MinaClient, Currency};
+//! use mina_sdk::{MinaClient, Payment, Currency};
 //!
 //! let client = MinaClient::new("http://127.0.0.1:3085/graphql");
 //!
@@ -14,12 +14,11 @@
 //!
 //! // Send a payment
 //! let result = client.send_payment(
-//!     "B62q..sender..",
-//!     "B62q..receiver..",
-//!     Currency::from_mina("1.5")?,
-//!     Currency::from_mina("0.01")?,
-//!     Some("hello"),
-//!     None,
+//!     Payment::sender("B62q..sender..")
+//!         .to("B62q..receiver..")
+//!         .amount(Currency::from_mina("1.5")?)
+//!         .fee(Currency::from_mina("0.01")?)
+//!         .memo("hello"),
 //! ).await?;
 //! println!("Payment hash: {}", result.hash);
 //! # Ok(())
@@ -36,6 +35,6 @@ pub use client::{ClientConfig, MinaClient};
 pub use currency::Currency;
 pub use error::{Error, Result};
 pub use types::{
-    AccountBalance, AccountData, BlockInfo, DaemonStatus, PeerInfo, PooledUserCommand,
-    SendDelegationResult, SendPaymentResult, SyncStatus,
+    AccountBalance, AccountData, BlockInfo, DaemonStatus, Delegation, Payment, PeerInfo,
+    PooledUserCommand, SendDelegationResult, SendPaymentResult, SyncStatus,
 };

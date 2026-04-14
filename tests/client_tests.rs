@@ -305,12 +305,11 @@ async fn test_send_payment() {
     let client = MinaClient::with_config(test_config(&format!("{}/graphql", server.uri())));
     let result = client
         .send_payment(
-            "B62qsender",
-            "B62qreceiver",
-            Currency::from_mina("1.5").unwrap(),
-            Currency::from_mina("0.01").unwrap(),
-            Some("test memo"),
-            None,
+            Payment::sender("B62qsender")
+                .to("B62qreceiver")
+                .amount(Currency::from_mina("1.5").unwrap())
+                .fee(Currency::from_mina("0.01").unwrap())
+                .memo("test memo"),
         )
         .await
         .unwrap();
@@ -339,11 +338,9 @@ async fn test_send_delegation() {
     let client = MinaClient::with_config(test_config(&format!("{}/graphql", server.uri())));
     let result = client
         .send_delegation(
-            "B62qsender",
-            "B62qdelegate",
-            Currency::from_mina("0.01").unwrap(),
-            None,
-            None,
+            Delegation::sender("B62qsender")
+                .to("B62qdelegate")
+                .fee(Currency::from_mina("0.01").unwrap()),
         )
         .await
         .unwrap();
