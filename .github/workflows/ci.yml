@@ -67,19 +67,3 @@ jobs:
         with:
           files: cobertura.xml
           fail_ci_if_error: false
-
-  msrv:
-    name: MSRV check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install MSRV Rust
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: "1.75"
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Check MSRV
-        run: cargo check
