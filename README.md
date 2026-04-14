@@ -1,9 +1,8 @@
 # Mina Rust SDK
 
-[![Crates.io](https://img.shields.io/crates/v/mina-sdk.svg)](https://crates.io/crates/mina-sdk)
-[![Documentation](https://docs.rs/mina-sdk/badge.svg)](https://docs.rs/mina-sdk)
 [![CI](https://github.com/MinaProtocol/mina-sdk-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/MinaProtocol/mina-sdk-rust/actions/workflows/ci.yml)
-[![License: Apache-2.0](https://img.shields.io/crates/l/mina-sdk.svg)](LICENSE)
+[![Integration Tests](https://github.com/MinaProtocol/mina-sdk-rust/actions/workflows/integration.yml/badge.svg)](https://github.com/MinaProtocol/mina-sdk-rust/actions/workflows/integration.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 Rust SDK for interacting with [Mina Protocol](https://minaprotocol.com) nodes via GraphQL.
 
