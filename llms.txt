@@ -1,0 +1,97 @@
+# mina-sdk
+
+> Rust SDK for interacting with Mina Protocol blockchain nodes via GraphQL
+
+Mina Protocol is a lightweight blockchain (~22 KB) powered by recursive zero-knowledge proofs (zk-SNARKs). This crate provides a typed, async Rust client for the Mina daemon's GraphQL API.
+
+## Installation
+
+```toml
+[dependencies]
+mina-sdk = "0.1"
+```
+
+## Core Types
+
+- `MinaClient` — async GraphQL client with automatic retry and timeout
+- `ClientConfig` — connection settings (URI, retries, retry_delay, timeout)
+- `Currency` — MINA amount type stored as nanomina (1 MINA = 10^9 nanomina), with safe arithmetic
+- `SyncStatus` — enum: Connecting, Listening, Offline, Bootstrap, Synced, Catchup
+- `Error` — enum: Graphql, Connection, MissingField, CurrencyUnderflow, InvalidCurrency, AccountNotFound
+
+## Query Methods (on MinaClient)
+
+- `get_sync_status()` → `SyncStatus` — node sync state
+- `get_daemon_status()` → `DaemonStatus` — blockchain length, uptime, peers, state hash
+- `get_network_id()` → `String` — network identifier
+- `get_account(public_key, token_id)` → `AccountData` — balance (total/liquid/locked), nonce, delegate
+- `get_best_chain(max_length)` → `Vec<BlockInfo>` — recent blocks with height, slot, creator, tx count
+- `get_peers()` → `Vec<PeerInfo>` — connected peers (id, host, port)
+- `get_pooled_user_commands(public_key)` → `Vec<PooledUserCommand>` — pending transaction pool
+
+## Mutation Methods (on MinaClient)
+
+- `send_payment(sender, receiver, amount, fee, memo, nonce)` → `SendPaymentResult` — submit payment
+- `send_delegation(sender, delegate_to, fee, memo, nonce)` → `SendDelegationResult` — delegate stake
+- `set_snark_worker(public_key)` → `Option<String>` — enable/disable SNARK worker
+- `set_snark_work_fee(fee)` → `String` — set SNARK work fee
+
+## Custom Queries
+
+- `execute_query(query, variables, query_name)` → `serde_json::Value` — run arbitrary GraphQL
+
+## Currency Usage
+
+```rust
+use mina_sdk::Currency;
+
+let amount = Currency::from_mina("1.5")?;       // from decimal string
+let nano = Currency::from_nanomina(1_500_000_000); // from atomic units
+let gql = Currency::from_graphql("1500000000")?; // from GraphQL response
+
+amount.mina()           // "1.500000000"
+amount.nanomina()       // 1500000000
+amount.to_nanomina_str() // "1500000000" (for GraphQL input)
+
+// Arithmetic: +, -, * u64, checked_add, checked_sub, checked_mul
+// Comparison: ==, <, >, <=, >=, Ord, Hash
+```
+
+## Quick Start
+
+```rust
+use mina_sdk::{MinaClient, Currency};
+
+#[tokio::main]
+async fn main() -> mina_sdk::Result<()> {
+    let client = MinaClient::new("http://127.0.0.1:3085/graphql");
+
+    // Check node status
+    let status = client.get_sync_status().await?;
+    println!("Node is {status}");
+
+    // Query account
+    let account = client.get_account("B62q...", None).await?;
+    println!("Balance: {} MINA", account.balance.total);
+
+    // Send payment
+    let result = client.send_payment(
+        "B62q..sender..",
+        "B62q..receiver..",
+        Currency::from_mina("1.5")?,
+        Currency::from_mina("0.01")?,
+        Some("memo"),
+        None,
+    ).await?;
+    println!("Payment hash: {}", result.hash);
+
+    Ok(())
+}
+```
+
+## Links
+
+- Repository: https://github.com/MinaProtocol/mina-sdk-rust
+- API Docs: https://docs.rs/mina-sdk
+- Mina Protocol: https://minaprotocol.com
+- Mina Docs: https://docs.minaprotocol.com

@@ -9,9 +9,13 @@ homepage = "https://github.com/MinaProtocol/mina-sdk-rust"
 documentation = "https://docs.rs/mina-sdk"
 readme = "README.md"
 authors = ["Mina Protocol <engineering@minaprotocol.com>"]
-keywords = ["mina", "blockchain", "graphql", "cryptocurrency"]
-categories = ["api-bindings"]
+keywords = ["mina", "blockchain", "graphql", "cryptocurrency", "web3"]
+categories = ["api-bindings", "cryptography::cryptocurrencies"]
 exclude = [".github/", "scripts/", "schema/", "tests/integration_tests.rs"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 reqwest = { version = "0.12", features = ["json"] }
