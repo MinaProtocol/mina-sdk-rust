@@ -25,9 +25,9 @@ fn main() -> mina_sdk::Result<()> {
     // ---- Display & conversion ----
 
     let amount = Currency::from_mina("42.5")?;
-    println!("Display:     {amount}");                 // 42.500000000
-    println!("As MINA:     {}", amount.mina());        // 42.500000000
-    println!("As nanomina: {}", amount.nanomina());    // 42500000000
+    println!("Display:     {amount}"); // 42.500000000
+    println!("As MINA:     {}", amount.mina()); // 42.500000000
+    println!("As nanomina: {}", amount.nanomina()); // 42500000000
     println!("For GraphQL: {}", amount.to_nanomina_str()); // 42500000000
 
     // ---- Arithmetic ----
@@ -77,7 +77,10 @@ fn main() -> mina_sdk::Result<()> {
     amounts.insert(Currency::from_mina("3.0")?);
     amounts.insert(Currency::from_mina("1.0")?);
     amounts.insert(Currency::from_mina("2.0")?);
-    println!("Sorted: {:?}", amounts.iter().map(|c| c.mina()).collect::<Vec<_>>());
+    println!(
+        "Sorted: {:?}",
+        amounts.iter().map(|c| c.mina()).collect::<Vec<_>>()
+    );
 
     // ---- Smallest unit ----
 

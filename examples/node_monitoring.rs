@@ -44,7 +44,13 @@ async fn main() -> mina_sdk::Result<()> {
     let peers = client.get_peers().await?;
     println!("\nConnected peers: {}", peers.len());
     for (i, peer) in peers.iter().enumerate().take(5) {
-        println!("  {}: {}:{} ({})", i + 1, peer.host, peer.port, peer.peer_id);
+        println!(
+            "  {}: {}:{} ({})",
+            i + 1,
+            peer.host,
+            peer.port,
+            peer.peer_id
+        );
     }
     if peers.len() > 5 {
         println!("  ... and {} more", peers.len() - 5);
