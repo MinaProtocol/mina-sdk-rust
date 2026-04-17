@@ -34,16 +34,21 @@ async fn main() -> mina_sdk::Result<()> {
         );
     }
 
-    // Query an account (replace with a valid public key)
-    match client.get_account("B62q...", None).await {
-        Ok(account) => {
-            println!("Balance: {} MINA", account.balance.total);
-            println!("Nonce: {}", account.nonce);
+    // Query an account. Set MINA_TEST_SENDER_KEY to a valid public key to run;
+    // otherwise skip this section.
+    if let Ok(public_key) = std::env::var("MINA_TEST_SENDER_KEY") {
+        match client.get_account(&public_key, None).await {
+            Ok(account) => {
+                println!("Balance: {} MINA", account.balance.total);
+                println!("Nonce: {}", account.nonce);
+            }
+            Err(mina_sdk::Error::AccountNotFound(_)) => {
+                println!("Account not found");
+            }
+            Err(e) => return Err(e),
         }
-        Err(mina_sdk::Error::AccountNotFound(_)) => {
-            println!("Account not found");
-        }
-        Err(e) => return Err(e),
+    } else {
+        println!("Skipping account query (set MINA_TEST_SENDER_KEY to enable)");
     }
 
     Ok(())

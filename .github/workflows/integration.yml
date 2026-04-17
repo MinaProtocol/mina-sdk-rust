@@ -75,3 +75,15 @@ jobs:
           MINA_TEST_SENDER_KEY: ${{ steps.accounts.outputs.sender_pk }}
           MINA_TEST_RECEIVER_KEY: ${{ steps.accounts.outputs.receiver_pk }}
         run: cargo test --test integration_tests -- --test-threads=1
+
+      - name: Run examples
+        env:
+          MINA_TEST_SENDER_KEY: ${{ steps.accounts.outputs.sender_pk }}
+          MINA_TEST_RECEIVER_KEY: ${{ steps.accounts.outputs.receiver_pk }}
+        run: |
+          set -euo pipefail
+          for ex in basic_usage currency_operations custom_query error_handling node_monitoring send_payment stake_delegation; do
+            echo "::group::example $ex"
+            cargo run --example "$ex"
+            echo "::endgroup::"
+          done

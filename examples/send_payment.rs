@@ -10,15 +10,23 @@ use mina_sdk::{Currency, MinaClient, Payment};
 async fn main() -> mina_sdk::Result<()> {
     let client = MinaClient::new("http://127.0.0.1:3085/graphql");
 
-    let sender = "B62q...sender...";
-    let receiver = "B62q...receiver...";
+    // Set MINA_TEST_SENDER_KEY to an unlocked account and MINA_TEST_RECEIVER_KEY
+    // to any account to run. Without them, this example short-circuits.
+    let (Ok(sender), Ok(receiver)) = (
+        std::env::var("MINA_TEST_SENDER_KEY"),
+        std::env::var("MINA_TEST_RECEIVER_KEY"),
+    ) else {
+        println!("Set MINA_TEST_SENDER_KEY and MINA_TEST_RECEIVER_KEY to run");
+        return Ok(());
+    };
+
     let fee = Currency::from_mina("0.01")?;
 
     // Send with a memo
     let result = client
         .send_payment(
-            Payment::sender(sender)
-                .to(receiver)
+            Payment::sender(&sender)
+                .to(&receiver)
                 .amount(Currency::from_mina("1.5")?)
                 .fee(fee)
                 .memo("coffee payment"),
@@ -33,8 +41,8 @@ async fn main() -> mina_sdk::Result<()> {
     // Send with an explicit nonce (useful for sending multiple transactions)
     let result2 = client
         .send_payment(
-            Payment::sender(sender)
-                .to(receiver)
+            Payment::sender(&sender)
+                .to(&receiver)
                 .amount(Currency::from_mina("2.0")?)
                 .fee(fee)
                 .memo("second payment")
