@@ -49,6 +49,14 @@ pub struct MinaClient {
     http: reqwest::Client,
 }
 
+impl Default for MinaClient {
+    /// Create a client connected to the default local daemon
+    /// (`http://127.0.0.1:3085/graphql`) with default retry/timeout settings.
+    fn default() -> Self {
+        Self::with_config(ClientConfig::default())
+    }
+}
+
 impl MinaClient {
     /// Create a new client with default settings.
     pub fn new(graphql_uri: &str) -> Self {
@@ -56,6 +64,16 @@ impl MinaClient {
             graphql_uri: graphql_uri.to_string(),
             ..Default::default()
         })
+    }
+
+    /// Create a client targeting `http://{host}:{port}/graphql`.
+    ///
+    /// ```
+    /// use mina_sdk::MinaClient;
+    /// let client = MinaClient::from_host_and_port("127.0.0.1", 3085);
+    /// ```
+    pub fn from_host_and_port(host: &str, port: u16) -> Self {
+        Self::new(&format!("http://{host}:{port}/graphql"))
     }
 
     /// Create a new client with custom configuration.
@@ -76,10 +94,45 @@ impl MinaClient {
         Self { config, http }
     }
 
+    /// Start building a custom GraphQL query with named options.
+    ///
+    /// Preferred entry point for arbitrary queries — variables and name are
+    /// opt-in via the builder, so callers don't have to spell out `None`:
+    ///
+    /// ```no_run
+    /// # async fn example() -> mina_sdk::Result<()> {
+    /// use mina_sdk::MinaClient;
+    /// use serde_json::json;
+    ///
+    /// let client = MinaClient::default();
+    ///
+    /// let data = client.query("query { version }").send().await?;
+    /// println!("{}", data["version"]);
+    ///
+    /// let data = client
+    ///     .query("query ($len: Int) { bestChain(maxLength: $len) { stateHash } }")
+    ///     .variables(json!({ "len": 3 }))
+    ///     .name("best_chain_custom")
+    ///     .send()
+    ///     .await?;
+    /// # let _ = data;
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn query<'a>(&'a self, query: &'a str) -> QueryBuilder<'a> {
+        QueryBuilder {
+            client: self,
+            query,
+            variables: None,
+            name: None,
+        }
+    }
+
     /// Execute a raw GraphQL query and return the `data` field of the response.
     ///
-    /// This method is public to allow downstream crates (e.g. mina-perf-testing)
-    /// to run custom queries through the same client with retry logic.
+    /// This low-level method stays public so downstream crates
+    /// (e.g. mina-perf-testing) can reuse the client's retry logic. For new
+    /// code prefer [`MinaClient::query`], which exposes a builder.
     pub async fn execute_query(
         &self,
         query: &str,
@@ -509,4 +562,37 @@ fn parse_u64(v: &Value) -> u64 {
         .and_then(|s| s.parse().ok())
         .or_else(|| v.as_u64())
         .unwrap_or(0)
+}
+
+/// Builder returned by [`MinaClient::query`] for running arbitrary GraphQL.
+///
+/// Set optional `variables` and a log-friendly `name`, then `send()` to run
+/// the query through the client's retry logic.
+#[must_use = "call .send() to execute the query"]
+pub struct QueryBuilder<'a> {
+    client: &'a MinaClient,
+    query: &'a str,
+    variables: Option<Value>,
+    name: Option<&'a str>,
+}
+
+impl<'a> QueryBuilder<'a> {
+    /// Attach GraphQL `$variables` to the query.
+    pub fn variables(mut self, variables: Value) -> Self {
+        self.variables = Some(variables);
+        self
+    }
+
+    /// Set a name for this query — used only in tracing/log messages.
+    pub fn name(mut self, name: &'a str) -> Self {
+        self.name = Some(name);
+        self
+    }
+
+    /// Execute the query. Returns the GraphQL `data` field as a `serde_json::Value`.
+    pub async fn send(self) -> Result<Value> {
+        self.client
+            .execute_query(self.query, self.variables, self.name.unwrap_or("custom"))
+            .await
+    }
 }

@@ -8,7 +8,7 @@ use mina_sdk::{Currency, Error, MinaClient, Payment};
 
 #[tokio::main]
 async fn main() {
-    let client = MinaClient::new("http://127.0.0.1:3085/graphql");
+    let client = MinaClient::default();
 
     // ---- AccountNotFound ----
     match client.get_account("B62qNONEXISTENT", None).await {
@@ -20,7 +20,7 @@ async fn main() {
     }
 
     // ---- Connection errors (node not reachable) ----
-    let bad_client = MinaClient::new("http://127.0.0.1:9999/graphql");
+    let bad_client = MinaClient::from_host_and_port("127.0.0.1", 9999);
     match bad_client.get_sync_status().await {
         Ok(status) => println!("Status: {status}"),
         Err(Error::Connection { attempts, .. }) => {

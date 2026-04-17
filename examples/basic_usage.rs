@@ -7,8 +7,9 @@ use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> mina_sdk::Result<()> {
-    // Connect to a local Mina daemon (default: http://127.0.0.1:3085/graphql)
-    let client = MinaClient::new("http://127.0.0.1:3085/graphql");
+    // Connect to the default local Mina daemon (http://127.0.0.1:3085/graphql).
+    // For a custom host/port use MinaClient::from_host_and_port("host", port).
+    let client = MinaClient::default();
 
     // Check sync status
     let sync_status = client.get_sync_status().await?;
@@ -34,21 +35,22 @@ async fn main() -> mina_sdk::Result<()> {
         );
     }
 
-    // Query an account. Set MINA_TEST_SENDER_KEY to a valid public key to run;
-    // otherwise skip this section.
-    if let Ok(public_key) = std::env::var("MINA_TEST_SENDER_KEY") {
-        match client.get_account(&public_key, None).await {
-            Ok(account) => {
-                println!("Balance: {} MINA", account.balance.total);
-                println!("Nonce: {}", account.nonce);
-            }
-            Err(mina_sdk::Error::AccountNotFound(_)) => {
-                println!("Account not found");
-            }
-            Err(e) => return Err(e),
-        }
-    } else {
+    // Query an account. A Mina public key looks like:
+    //   B62qjVQLxt9nYMWGn45mkgwYfcz8e8jvjNCBo11VKJb7vxDNwv5QLPS
+    // Set MINA_TEST_SENDER_KEY to a real key to run this section, otherwise we skip.
+    let Ok(public_key) = std::env::var("MINA_TEST_SENDER_KEY") else {
         println!("Skipping account query (set MINA_TEST_SENDER_KEY to enable)");
+        return Ok(());
+    };
+    match client.get_account(&public_key, None).await {
+        Ok(account) => {
+            println!("Balance: {} MINA", account.balance.total);
+            println!("Nonce: {}", account.nonce);
+        }
+        Err(mina_sdk::Error::AccountNotFound(_)) => {
+            println!("Account not found");
+        }
+        Err(e) => return Err(e),
     }
 
     Ok(())
@@ -57,7 +59,7 @@ async fn main() -> mina_sdk::Result<()> {
 /// Example: send a payment and delegate stake.
 #[allow(dead_code)]
 async fn send_transactions() -> mina_sdk::Result<()> {
-    let client = MinaClient::new("http://127.0.0.1:3085/graphql");
+    let client = MinaClient::default();
 
     // Send a payment with memo
     let result = client

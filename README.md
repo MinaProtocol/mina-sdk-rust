@@ -126,8 +126,6 @@ Runnable programs live in [`examples/`](examples/):
 | `error_handling` | `cargo run --example error_handling` | yes |
 | `currency_operations` | `cargo run --example currency_operations` | no |
 
-An LLM-friendly summary of the API is available in [`llms.txt`](llms.txt) (concise) and [`llms-full.txt`](llms-full.txt) (detailed).
-
 ## Development
 
 ```bash

@@ -131,7 +131,7 @@ pub mod error;
 pub mod queries;
 mod types;
 
-pub use client::{ClientConfig, MinaClient};
+pub use client::{ClientConfig, MinaClient, QueryBuilder};
 pub use currency::Currency;
 pub use error::{Error, Result};
 pub use types::{

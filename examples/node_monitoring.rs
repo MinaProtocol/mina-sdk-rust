@@ -8,7 +8,7 @@ use mina_sdk::{MinaClient, SyncStatus};
 
 #[tokio::main]
 async fn main() -> mina_sdk::Result<()> {
-    let client = MinaClient::new("http://127.0.0.1:3085/graphql");
+    let client = MinaClient::default();
 
     // ---- Health check ----
     let sync = client.get_sync_status().await?;
