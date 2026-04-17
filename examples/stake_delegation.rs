@@ -4,7 +4,7 @@
 //!
 //! Requires a running Mina daemon with the delegator account unlocked.
 
-use mina_sdk::{Currency, MinaClient};
+use mina_sdk::{Currency, Delegation, MinaClient};
 
 #[tokio::main]
 async fn main() -> mina_sdk::Result<()> {
@@ -15,7 +15,12 @@ async fn main() -> mina_sdk::Result<()> {
     let fee = Currency::from_mina("0.01")?;
 
     let result = client
-        .send_delegation(delegator, validator, fee, Some("staking"), None)
+        .send_delegation(
+            Delegation::sender(delegator)
+                .to(validator)
+                .fee(fee)
+                .memo("staking"),
+        )
         .await?;
 
     println!("Delegation submitted!");

@@ -4,7 +4,7 @@
 //!
 //! Demonstrates matching on specific error variants for robust applications.
 
-use mina_sdk::{Currency, Error, MinaClient};
+use mina_sdk::{Currency, Error, MinaClient, Payment};
 
 #[tokio::main]
 async fn main() {
@@ -32,12 +32,10 @@ async fn main() {
     // ---- GraphQL errors (e.g., invalid mutation input) ----
     match client
         .send_payment(
-            "INVALID_KEY",
-            "INVALID_KEY",
-            Currency::from_nanomina(0),
-            Currency::from_nanomina(0),
-            None,
-            None,
+            Payment::sender("INVALID_KEY")
+                .to("INVALID_KEY")
+                .amount(Currency::from_nanomina(0))
+                .fee(Currency::from_nanomina(0)),
         )
         .await
     {
