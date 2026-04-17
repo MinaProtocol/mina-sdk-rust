@@ -112,6 +112,20 @@ println!("{}", a.nanomina());   // 10000000000
 assert!(a > b);
 ```
 
+## Examples
+
+Runnable programs live in [`examples/`](examples/):
+
+| Example | Command | Needs a node |
+|---------|---------|--------------|
+| `basic_usage` | `cargo run --example basic_usage` | yes |
+| `send_payment` | `cargo run --example send_payment` | yes |
+| `stake_delegation` | `cargo run --example stake_delegation` | yes |
+| `node_monitoring` | `cargo run --example node_monitoring` | yes |
+| `custom_query` | `cargo run --example custom_query` | yes |
+| `error_handling` | `cargo run --example error_handling` | yes |
+| `currency_operations` | `cargo run --example currency_operations` | no |
+
 ## Development
 
 ```bash
