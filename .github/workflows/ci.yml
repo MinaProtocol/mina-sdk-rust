@@ -59,11 +59,14 @@ jobs:
         run: cargo install cargo-tarpaulin
 
       - name: Generate coverage
-        run: cargo tarpaulin --lib --out xml --skip-clean -- --skip integration
+        run: >
+          cargo tarpaulin --lib --test client_tests
+          --out lcov --skip-clean
+          --exclude-files 'examples/*'
+          --exclude-files 'tests/*'
 
-      - name: Upload to Codecov
-        if: github.event_name != 'pull_request'
-        uses: codecov/codecov-action@v6
+      - name: Upload to Coveralls
+        uses: coverallsapp/github-action@v2
         with:
-          files: cobertura.xml
-          fail_ci_if_error: false
+          file: lcov.info
+          fail-on-error: true
