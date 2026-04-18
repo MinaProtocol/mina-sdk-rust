@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.2.0-alpha.1] - 2026-04-18
+
 ### Added
 - Constructor input validation: panics on zero retries or zero timeout
 - HTTP status code check before parsing JSON response body
@@ -11,15 +13,17 @@ All notable changes to this project will be documented in this file.
 - Reverse multiply support: `3_u64 * currency` now works
 - `ClientConfig::default()` test to assert public API contract
 - CHANGELOG.md
-- Badges in README (crates.io, docs.rs, CI, license)
+- Badges in README (crates.io, docs.rs, CI, license, coverage)
 - Integration test instructions in README
 - Troubleshooting section in README
 - Doc build with `-D warnings` in CI
+- Coverage of `client_tests` in the coverage job (raised from ~18% to ~88%)
 
 ### Changed
 - Slimmed `tokio` runtime features from `full` to `rt` + `time`
 - Explicit type re-exports instead of glob `pub use types::*`
 - Excluded non-essential files from crates.io package
+- Switched coverage reporting from Codecov to Coveralls
 
 ### Fixed
 - `GET_ACCOUNT` query uses correct `TokenId` type (was `UInt64`)
