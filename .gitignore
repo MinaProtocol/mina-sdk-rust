@@ -5,3 +5,6 @@ Cargo.lock
 *.swp
 *.swo
 *~
+cobertura.xml
+lcov.info
+tarpaulin-report.*
